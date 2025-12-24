@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Progress - Bible Reading Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+                    <h1>My Progress</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn" onclick="exportProgress()">
+                        <span>📤</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- User Name Display -->
+        <div class="card user-info-card">
+            <h2 id="progressUserName">Select a user</h2>
+        </div>
+
+        <!-- Progress Circle -->
+        <div class="card progress-card">
+            <div class="progress-circle-container">
+                <svg class="progress-ring" width="200" height="200">
+                    <circle class="progress-ring-bg" cx="100" cy="100" r="85" />
+                    <circle class="progress-ring-progress" id="progressCircle" cx="100" cy="100" r="85" />
+                </svg>
+                <div class="progress-text">
+                    <div class="progress-percentage" id="progressPercentage">0%</div>
+                    <div class="progress-label">Completed</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value" id="completedCount">0</div>
+                <div class="stat-label">Completed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📚</div>
+                <div class="stat-value" id="totalCount">0</div>
+                <div class="stat-label">Total Readings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-value" id="remainingCount">0</div>
+                <div class="stat-label">Remaining</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-value" id="streakCount">0</div>
+                <div class="stat-label">Day Streak</div>
+            </div>
+        </div>
+
+        <!-- Reading History -->
+        <div class="section-header">
+            <h2>Reading History</h2>
+        </div>
+
+        <div id="historyList" class="history-list"></div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-item">
+                <span class="nav-icon">📅</span>
+                <span class="nav-label">Today</span>
+            </a>
+            <a href="progress.html" class="nav-item active">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Progress</span>
+            </a>
+            <a href="dashboard.html" class="nav-item">
+                <span class="nav-icon">👥</span>
+                <span class="nav-label">Community</span>
+            </a>
+            <a href="admin.html" class="nav-item">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-label">Admin</span>
+            </a>
+        </nav>
+    </div>
+
+    <script src="data-supabase.js"></script>
+    <script src="progress.js"></script>
+</body>
+</html>

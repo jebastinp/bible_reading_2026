@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Dashboard - Bible Reading Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+                    <h1>Community</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn" onclick="refreshDashboard()">
+                        <span>🔄</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Top Readers Section -->
+        <div class="section-header">
+            <h2>🏆 Top Readers</h2>
+            <span class="subtitle">Most consistent this year</span>
+        </div>
+
+        <div id="topReadersList" class="top-readers-list"></div>
+
+        <!-- All Participants Section -->
+        <div class="section-header">
+            <h2>All Participants</h2>
+            <span class="subtitle">Click to view details</span>
+        </div>
+
+        <div id="allParticipantsList" class="participants-list"></div>
+
+        <!-- User Detail Modal -->
+        <div id="userDetailModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalUserName"></h2>
+                    <button class="close-btn" onclick="closeUserDetail()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-stats">
+                        <div class="modal-stat">
+                            <div class="stat-value" id="modalCompleted">0</div>
+                            <div class="stat-label">Completed</div>
+                        </div>
+                        <div class="modal-stat">
+                            <div class="stat-value" id="modalPercentage">0%</div>
+                            <div class="stat-label">Progress</div>
+                        </div>
+                        <div class="modal-stat">
+                            <div class="stat-value" id="modalStreak">0</div>
+                            <div class="stat-label">Streak</div>
+                        </div>
+                    </div>
+                    <div class="modal-recent">
+                        <h3>Recent Completions</h3>
+                        <div id="modalRecentList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-item">
+                <span class="nav-icon">📅</span>
+                <span class="nav-label">Today</span>
+            </a>
+            <a href="progress.html" class="nav-item">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Progress</span>
+            </a>
+            <a href="dashboard.html" class="nav-item active">
+                <span class="nav-icon">👥</span>
+                <span class="nav-label">Community</span>
+            </a>
+            <a href="admin.html" class="nav-item">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-label">Admin</span>
+            </a>
+        </nav>
+    </div>
+
+    <script src="data-supabase.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>

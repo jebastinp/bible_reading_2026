@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bible Reading Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="header-content-center">
+                <div class="logo-center">
+                    <span class="logo-icon">📖</span>
+                    <h1>Bible Reading 2026</h1>
+                </div>
+            </div>
+        </header>
+
+        <!-- User Selection Card -->
+        <div class="card user-selection-card">
+            <h2>Welcome! Select Your Name</h2>
+            <div class="user-select-wrapper">
+                <select id="userSelect" onchange="selectUser()">
+                    <option value="">Choose your name...</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Today's Reading Section -->
+        <div class="section-header">
+            <h2>Today</h2>
+            <div class="location-tag">
+                <span class="location-icon">📍</span>
+                <span id="currentDate"></span>
+            </div>
+        </div>
+
+        <div id="todayReadingCard" class="card reading-card" style="display: none;">
+            <div class="card-image">
+                <img src="https://images.unsplash.com/photo-1501250987900-211872d97eaa?w=800&h=400&fit=crop" alt="Bible Reading">
+                <div class="date-badge">
+                    <div class="date-day" id="todayDay"></div>
+                    <div class="date-month" id="todayMonth"></div>
+                </div>
+            </div>
+            <div class="card-content">
+                <h3 id="todayTitle">Today's Reading</h3>
+                <p class="reading-time" id="todayPortion"></p>
+                <div class="card-footer">
+                    <div class="attendees">
+                        <span class="attendee-count" id="completionCount">+0 Completed</span>
+                    </div>
+                    <button class="btn-primary" id="completeBtn" onclick="markComplete()">Complete</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="noReadingCard" class="card no-reading-card" style="display: none;">
+            <div class="no-reading-content">
+                <span class="emoji">🌅</span>
+                <h3>No Reading Today</h3>
+                <p>Enjoy your weekend! You can catch up on any missed readings.</p>
+            </div>
+        </div>
+
+        <!-- Missed Readings Section -->
+        <div id="missedReadingsSection" style="display: none;">
+            <div class="section-header">
+                <h2>Catch Up</h2>
+                <span class="subtitle">Complete your missed readings</span>
+            </div>
+            <div id="missedReadingsList" class="upcoming-grid"></div>
+        </div>
+
+        <!-- Upcoming/Recent Readings -->
+        <div class="section-header">
+            <h2>Recent Readings</h2>
+        </div>
+        <div id="recentReadingsList" class="upcoming-grid"></div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-item active">
+                <span class="nav-icon">📅</span>
+                <span class="nav-label">Today</span>
+            </a>
+            <a href="progress.html" class="nav-item">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Progress</span>
+            </a>
+            <a href="dashboard.html" class="nav-item">
+                <span class="nav-icon">👥</span>
+                <span class="nav-label">Community</span>
+            </a>
+            <a href="admin.html" class="nav-item">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-label">Admin</span>
+            </a>
+        </nav>
+    </div>
+
+    <script src="data-supabase.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
