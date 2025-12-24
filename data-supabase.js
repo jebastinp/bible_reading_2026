@@ -1,9 +1,13 @@
-// Local data storage (no external backend)
+// Firebase-backed data storage
 
-const STORAGE_KEYS = {
-    PARTICIPANTS: 'bible_participants',
-    COMPLETIONS: 'bible_completions',
-    CURRENT_USER: 'bible_current_user'
+const firebaseConfig = {
+    apiKey: 'AIzaSyCmwYbCToCdCyP4Qre8FrehEdU4Q3f6p0w',
+    authDomain: 'bible-84953.firebaseapp.com',
+    databaseURL: 'https://bible-84953-default-rtdb.firebaseio.com',
+    projectId: 'bible-84953',
+    storageBucket: 'bible-84953.firebasestorage.app',
+    messagingSenderId: '810731825434',
+    appId: '1:810731825434:web:cf0e0713bbab451e5ee4a3'
 };
 
 let BIBLE_READING_PLAN = [
@@ -20,54 +24,59 @@ let BIBLE_READING_PLAN = [
     { date: '2026-01-08', portion: 'Genesis 37-40', day: 'Thursday' },
     { date: '2026-01-09', portion: 'Genesis 41-43', day: 'Friday' }
 ];
+let firebaseApp;
+let firebaseDb;
 
-function ensureLocalStorageDefaults() {
-    if (!localStorage.getItem(STORAGE_KEYS.PARTICIPANTS)) {
-        localStorage.setItem(STORAGE_KEYS.PARTICIPANTS, JSON.stringify(['John', 'Mary', 'Peter', 'Sarah', 'David']));
-    }
-    if (!localStorage.getItem(STORAGE_KEYS.COMPLETIONS)) {
-        localStorage.setItem(STORAGE_KEYS.COMPLETIONS, JSON.stringify([]));
-    }
+function initFirebase() {
+    if (firebaseApp) return;
+    firebaseApp = firebase.initializeApp(firebaseConfig);
+    firebaseDb = firebase.database();
 }
 
 async function initializeReadingPlan() {
-    ensureLocalStorageDefaults();
+    initFirebase();
     return BIBLE_READING_PLAN;
 }
 
 async function getParticipants() {
-    ensureLocalStorageDefaults();
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.PARTICIPANTS) || '[]');
+    initFirebase();
+    const snapshot = await firebaseDb.ref('participants').once('value');
+    const data = snapshot.val() || {};
+    return Object.keys(data);
 }
 
 async function saveParticipant(name) {
-    ensureLocalStorageDefaults();
-    const list = JSON.parse(localStorage.getItem(STORAGE_KEYS.PARTICIPANTS));
-    if (list.includes(name)) {
+    initFirebase();
+    const existing = await getParticipants();
+    if (existing.includes(name)) {
         throw new Error('This participant already exists');
     }
-    list.push(name);
-    localStorage.setItem(STORAGE_KEYS.PARTICIPANTS, JSON.stringify(list));
+    await firebaseDb.ref(`participants/${name}`).set(true);
     return { name };
 }
 
 async function removeParticipant(name) {
-    ensureLocalStorageDefaults();
-    const list = JSON.parse(localStorage.getItem(STORAGE_KEYS.PARTICIPANTS));
-    const filtered = list.filter(n => n !== name);
-    localStorage.setItem(STORAGE_KEYS.PARTICIPANTS, JSON.stringify(filtered));
+    initFirebase();
+    await firebaseDb.ref(`participants/${name}`).remove();
 }
 
 async function getCompletions() {
-    ensureLocalStorageDefaults();
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.COMPLETIONS) || '[]');
+    initFirebase();
+    const snapshot = await firebaseDb.ref('completions').once('value');
+    const data = snapshot.val() || {};
+    const results = [];
+    Object.keys(data).forEach(user => {
+        Object.keys(data[user]).forEach(date => {
+            results.push(data[user][date]);
+        });
+    });
+    return results;
 }
 
 async function saveCompletion(userName, date, portion, day, isCatchup = false) {
-    ensureLocalStorageDefaults();
-    const completions = JSON.parse(localStorage.getItem(STORAGE_KEYS.COMPLETIONS) || '[]');
-    const exists = completions.find(c => c.userName === userName && c.date === date);
-    if (exists) {
+    initFirebase();
+    const existingSnap = await firebaseDb.ref(`completions/${userName}/${date}`).once('value');
+    if (existingSnap.exists()) {
         throw new Error('Already marked complete');
     }
     const entry = {
@@ -78,17 +87,16 @@ async function saveCompletion(userName, date, portion, day, isCatchup = false) {
         catchup: isCatchup,
         day
     };
-    completions.push(entry);
-    localStorage.setItem(STORAGE_KEYS.COMPLETIONS, JSON.stringify(completions));
+    await firebaseDb.ref(`completions/${userName}/${date}`).set(entry);
     return entry;
 }
 
 function getCurrentUser() {
-    return localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+    return localStorage.getItem('bible_current_user');
 }
 
 function saveCurrentUser(userName) {
-    localStorage.setItem(STORAGE_KEYS.CURRENT_USER, userName);
+    localStorage.setItem('bible_current_user', userName);
 }
 
 function getReadingForDate(dateString) {
@@ -130,10 +138,12 @@ function getDayName(dayIndex) {
     return days[dayIndex];
 }
 
+function formatPortionDisplay(portion) {
+    return portion === 'Genesis 4-7' ? '<strong>Genesis 4-7</strong>' : portion;
+}
+
 function clearLocalData() {
-    localStorage.removeItem(STORAGE_KEYS.PARTICIPANTS);
-    localStorage.removeItem(STORAGE_KEYS.COMPLETIONS);
-    localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+    localStorage.removeItem('bible_current_user');
 }
 
 async function verifyAdmin(username, password) {
@@ -169,6 +179,7 @@ window.formatDate = formatDate;
 window.getTodayString = getTodayString;
 window.getMonthName = getMonthName;
 window.getDayName = getDayName;
+window.formatPortionDisplay = formatPortionDisplay;
 window.loadSampleData = () => BIBLE_READING_PLAN;
 window.initializeReadingPlan = initializeReadingPlan;
 window.verifyAdmin = verifyAdmin;

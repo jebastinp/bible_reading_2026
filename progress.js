@@ -168,7 +168,7 @@ async function loadReadingHistory() {
         
         item.innerHTML = `
             <div class="history-info">
-                <h4>${completion.portion} ${isCatchup ? '<span style="color: var(--accent-orange); font-size: 12px;">(Catch-up)</span>' : ''}</h4>
+                <h4>${formatPortionDisplay(completion.portion)} ${isCatchup ? '<span style="color: var(--accent-orange); font-size: 12px;">(Catch-up)</span>' : ''}</h4>
                 <p>${completion.day} - ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
             </div>
             <div class="history-date">

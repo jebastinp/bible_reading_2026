@@ -121,7 +121,7 @@ async function updateTodayReading() {
             const date = new Date(reading.date);
             document.getElementById('todayDay').textContent = date.getDate();
             document.getElementById('todayMonth').textContent = getMonthName(date.getMonth());
-            document.getElementById('todayPortion').textContent = reading.portion;
+            document.getElementById('todayPortion').innerHTML = formatPortionDisplay(reading.portion);
             
             // Check if already completed
             await updateCompleteButton(todayString);
@@ -271,24 +271,16 @@ function createMiniCard(data, date, isCompleted, isMissed = false) {
     const card = document.createElement('div');
     card.className = 'mini-card';
     
-    const imageUrls = [
-        'https://images.unsplash.com/photo-1501250987900-211872d97eaa?w=400&h=300&fit=crop',
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop',
-        'https://images.unsplash.com/photo-1519791883288-dc8bd696e667?w=400&h=300&fit=crop'
-    ];
-    
-    const randomImage = imageUrls[Math.floor(Math.random() * imageUrls.length)];
-    
     card.innerHTML = `
         <div class="mini-card-image">
-            <img src="${randomImage}" alt="Reading">
+            <img src="images/360_F_949919600_ZLhgy83cvYbWp6UFtsLlOh7hQnuXtmLv.jpg" alt="Bible Reading">
             <div class="mini-date-badge">
                 <div class="date-day">${date.getDate()}</div>
                 <div class="date-month">${getMonthName(date.getMonth())}</div>
             </div>
         </div>
         <div class="mini-card-content">
-            <h4>${data.portion}</h4>
+            <h4>${formatPortionDisplay(data.portion)}</h4>
             <p>${data.day || getDayName(date.getDay())}</p>
             <div class="mini-card-footer">
                 ${isCompleted ? 

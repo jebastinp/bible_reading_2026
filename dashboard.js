@@ -200,7 +200,7 @@ async function showUserDetail(userName) {
             const isCatchup = completion.catchup || false;
             
             item.innerHTML = `
-                <strong>${completion.portion}</strong> ${isCatchup ? '<span style="color: var(--accent-orange);">(Catch-up)</span>' : ''}<br>
+                ${formatPortionDisplay(completion.portion)} ${isCatchup ? '<span style="color: var(--accent-orange);">(Catch-up)</span>' : ''}<br>
                 ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             `;
             
