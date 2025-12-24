@@ -273,7 +273,7 @@ function createMiniCard(data, date, isCompleted, isMissed = false) {
     
     card.innerHTML = `
         <div class="mini-card-image">
-            <img src="images/360_F_949919600_ZLhgy83cvYbWp6UFtsLlOh7hQnuXtmLv.jpg" alt="Bible Reading">
+            <img src="images/photo-1509021436665-8f07dbf5bf1d.jpeg" alt="Bible Reading">
             <div class="mini-date-badge">
                 <div class="date-day">${date.getDate()}</div>
                 <div class="date-month">${getMonthName(date.getMonth())}</div>
