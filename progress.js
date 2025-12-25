@@ -4,24 +4,23 @@ let currentUser = null;
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', async function() {
-    // First check if user is selected before anything else
-    currentUser = getCurrentUser();
-    
-    if (!currentUser) {
-        showSelectNamePopup();
-        return; // Don't proceed with loading data
-    }
-    
-    // User exists, load the data
-    await initializeReadingPlan();
-    document.getElementById('progressUserName').textContent = currentUser;
-    await updateProgressDisplay();
-    await loadReadingHistory();
+    // Always show popup first - user must select their name each time
+    showSelectNamePopup();
 });
 
 // Show popup to select name
-function showSelectNamePopup() {
-    // Create overlay with inline styles as fallback
+async function showSelectNamePopup() {
+    // Load participants for dropdown
+    await initializeReadingPlan();
+    const participants = await getParticipants();
+    
+    // Create options HTML
+    let optionsHTML = '<option value="">Choose your name...</option>';
+    participants.forEach(p => {
+        optionsHTML += `<option value="${p.name}">${p.name}</option>`;
+    });
+    
+    // Create overlay with inline styles
     const overlay = document.createElement('div');
     overlay.className = 'popup-overlay';
     overlay.style.cssText = `
@@ -49,10 +48,23 @@ function showSelectNamePopup() {
             width: 100%;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         ">
-            <div style="font-size: 64px; margin-bottom: 16px;">👋</div>
-            <h2 style="font-size: 24px; font-weight: 700; color: #2D2D2D; margin-bottom: 12px;">Welcome!</h2>
-            <p style="font-size: 15px; color: #6B6B6B; margin-bottom: 24px; line-height: 1.5;">Please select your name first to view your progress.</p>
-            <button onclick="window.location.href='index.html'" style="
+            <div style="font-size: 64px; margin-bottom: 16px;">📊</div>
+            <h2 style="font-size: 24px; font-weight: 700; color: #2D2D2D; margin-bottom: 12px;">View Progress</h2>
+            <p style="font-size: 15px; color: #6B6B6B; margin-bottom: 24px; line-height: 1.5;">Select your name to view your reading progress.</p>
+            <select id="popupUserSelect" style="
+                width: 100%;
+                padding: 14px 16px;
+                font-size: 16px;
+                border-radius: 12px;
+                border: 2px solid #E5E5E5;
+                margin-bottom: 16px;
+                background: #FAFAFA;
+                color: #2D2D2D;
+                cursor: pointer;
+            ">
+                ${optionsHTML}
+            </select>
+            <button onclick="selectUserAndShowProgress()" style="
                 width: 100%;
                 padding: 16px 24px;
                 font-size: 16px;
@@ -63,11 +75,50 @@ function showSelectNamePopup() {
                 border: none;
                 cursor: pointer;
             ">
-                Select Name
+                View My Progress
+            </button>
+            <button onclick="window.location.href='index.html'" style="
+                width: 100%;
+                padding: 12px 24px;
+                font-size: 14px;
+                font-weight: 500;
+                border-radius: 50px;
+                background: transparent;
+                color: #6B6B6B;
+                border: none;
+                cursor: pointer;
+                margin-top: 8px;
+            ">
+                ← Back to Home
             </button>
         </div>
     `;
     document.body.appendChild(overlay);
+}
+
+// Select user from popup and show progress
+async function selectUserAndShowProgress() {
+    const select = document.getElementById('popupUserSelect');
+    const selectedUser = select.value;
+    
+    if (!selectedUser) {
+        alert('Please select your name');
+        return;
+    }
+    
+    currentUser = selectedUser;
+    saveCurrentUser(selectedUser);
+    
+    // Remove popup
+    const overlay = document.querySelector('.popup-overlay');
+    if (overlay) {
+        overlay.remove();
+    }
+    
+    // Show progress
+    document.getElementById('progressUserName').textContent = currentUser;
+    await updateProgressDisplay();
+    await loadReadingHistory();
 }
 
 // Load current user
