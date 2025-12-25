@@ -107,7 +107,14 @@ header {
 .logo-center {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+}
+
+.logo-center h1 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
 }
 
 .logo-icon {
@@ -115,7 +122,7 @@ header {
 }
 
 .logo h1 {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--text-primary);
 }
@@ -632,8 +639,8 @@ header {
 }
 
 .logo-icon-img {
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
     object-fit: contain;
 }
 
