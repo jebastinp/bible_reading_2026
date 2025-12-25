@@ -123,6 +123,10 @@ async function updateTodayReading() {
             document.getElementById('todayMonth').textContent = getMonthName(date.getMonth());
             document.getElementById('todayPortion').innerHTML = formatPortionDisplay(reading.portion);
             
+            // Update day counter (Day 1, Day 2, etc.)
+            const dayNumber = getDayNumber(todayString);
+            document.getElementById('dayCounterBadge').textContent = `Day ${dayNumber}`;
+            
             // Check if already completed
             await updateCompleteButton(todayString);
             await updateCompletionCount(todayString);
@@ -131,6 +135,13 @@ async function updateTodayReading() {
             noReadingCard.style.display = 'block';
         }
     }
+}
+
+// Get the day number for a given date (Day 1, Day 2, etc.)
+function getDayNumber(dateString) {
+    const plan = window.loadSampleData();
+    const index = plan.findIndex(r => r.date === dateString);
+    return index >= 0 ? index + 1 : 1;
 }
 
 // Update complete button based on completion status
