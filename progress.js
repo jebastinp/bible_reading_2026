@@ -4,15 +4,71 @@ let currentUser = null;
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', async function() {
-    await initializeReadingPlan();
-    loadCurrentUser();
-    if (currentUser) {
-        await updateProgressDisplay();
-        await loadReadingHistory();
-    } else {
-        window.location.href = 'index.html';
+    // First check if user is selected before anything else
+    currentUser = getCurrentUser();
+    
+    if (!currentUser) {
+        showSelectNamePopup();
+        return; // Don't proceed with loading data
     }
+    
+    // User exists, load the data
+    await initializeReadingPlan();
+    document.getElementById('progressUserName').textContent = currentUser;
+    await updateProgressDisplay();
+    await loadReadingHistory();
 });
+
+// Show popup to select name
+function showSelectNamePopup() {
+    // Create overlay with inline styles as fallback
+    const overlay = document.createElement('div');
+    overlay.className = 'popup-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        padding: 20px;
+    `;
+    
+    overlay.innerHTML = `
+        <div class="popup-card" style="
+            background: #FFFFFF;
+            border-radius: 24px;
+            padding: 40px 32px;
+            text-align: center;
+            max-width: 340px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        ">
+            <div style="font-size: 64px; margin-bottom: 16px;">👋</div>
+            <h2 style="font-size: 24px; font-weight: 700; color: #2D2D2D; margin-bottom: 12px;">Welcome!</h2>
+            <p style="font-size: 15px; color: #6B6B6B; margin-bottom: 24px; line-height: 1.5;">Please select your name first to view your progress.</p>
+            <button onclick="window.location.href='index.html'" style="
+                width: 100%;
+                padding: 16px 24px;
+                font-size: 16px;
+                font-weight: 600;
+                border-radius: 50px;
+                background: linear-gradient(135deg, #D4A574 0%, #C4956A 100%);
+                color: white;
+                border: none;
+                cursor: pointer;
+            ">
+                Select Name
+            </button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+}
 
 // Load current user
 function loadCurrentUser() {
@@ -114,11 +170,11 @@ async function updateProgressDisplay() {
         
         const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
         stop1.setAttribute('offset', '0%');
-        stop1.setAttribute('stop-color', '#667EEA');
+        stop1.setAttribute('stop-color', '#F2C94C');
         
         const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
         stop2.setAttribute('offset', '100%');
-        stop2.setAttribute('stop-color', '#764BA2');
+        stop2.setAttribute('stop-color', '#D4A574');
         
         gradient.appendChild(stop1);
         gradient.appendChild(stop2);
@@ -126,14 +182,38 @@ async function updateProgressDisplay() {
         svg.appendChild(defs);
     }
     
-    // Update percentage text
-    document.getElementById('progressPercentage').textContent = stats.percentage + '%';
+    // Update percentage text with animation
+    animateValue('progressPercentage', 0, stats.percentage, 1500);
     
-    // Update stat cards
-    document.getElementById('completedCount').textContent = stats.completed;
-    document.getElementById('totalCount').textContent = stats.total;
-    document.getElementById('remainingCount').textContent = stats.remaining;
-    document.getElementById('streakCount').textContent = stats.streak;
+    // Update stat cards with animation
+    animateValue('completedCount', 0, stats.completed, 1000);
+    animateValue('totalCount', 0, stats.total, 1000);
+    animateValue('remainingCount', 0, stats.remaining, 1000);
+    animateValue('streakCount', 0, stats.streak, 1000);
+}
+
+// Animate counting up numbers
+function animateValue(elementId, start, end, duration) {
+    const element = document.getElementById(elementId);
+    const isPercentage = elementId === 'progressPercentage';
+    const startTime = performance.now();
+    
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Ease out cubic
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const current = Math.round(start + (end - start) * easeOut);
+        
+        element.textContent = isPercentage ? current + '%' : current;
+        
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
+    }
+    
+    requestAnimationFrame(update);
 }
 
 // Load reading history
