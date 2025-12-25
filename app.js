@@ -143,14 +143,24 @@ async function updateCompleteButton(dateString) {
     );
     
     const btn = document.getElementById('completeBtn');
+    const undoBtn = document.getElementById('undoBtn');
+    
     if (completed) {
         btn.textContent = 'Completed ✓';
         btn.style.background = 'linear-gradient(135deg, #48BB78 0%, #38A169 100%)';
         btn.disabled = true;
+        // Show undo button
+        if (undoBtn) {
+            undoBtn.style.display = 'inline-block';
+        }
     } else {
         btn.textContent = 'Complete';
         btn.style.background = '';
         btn.disabled = false;
+        // Hide undo button
+        if (undoBtn) {
+            undoBtn.style.display = 'none';
+        }
     }
 }
 
@@ -203,6 +213,36 @@ async function markComplete() {
     } catch (error) {
         console.error('Error saving completion:', error);
         alert('Failed to save completion. Please try again.');
+    }
+}
+
+// Undo completion
+async function undoComplete() {
+    if (!currentUser) {
+        alert('Please select your name first');
+        return;
+    }
+    
+    const todayString = getTodayString();
+    
+    // Confirm undo
+    if (!confirm('Are you sure you want to undo this completion?')) {
+        return;
+    }
+    
+    try {
+        await removeCompletion(currentUser, todayString);
+        
+        // Update UI
+        await updateCompleteButton(todayString);
+        await updateCompletionCount(todayString);
+        await loadRecentReadings();
+        await loadMissedReadings();
+        
+        showSuccessMessage('Completion undone');
+    } catch (error) {
+        console.error('Error undoing completion:', error);
+        alert('Failed to undo. Please try again.');
     }
 }
 

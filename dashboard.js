@@ -78,9 +78,16 @@ async function loadTopReaders() {
         participants.map(name => calculateUserStats(name))
     );
     
-    // Sort by completed count
+    // Sort by completed count (highest first = top reader)
     const topReaders = allStats
-        .sort((a, b) => b.completed - a.completed)
+        .sort((a, b) => {
+            // First sort by completed count (descending)
+            if (b.completed !== a.completed) {
+                return b.completed - a.completed;
+            }
+            // If same count, sort by percentage
+            return b.percentage - a.percentage;
+        })
         .slice(0, 5);
     
     const container = document.getElementById('topReadersList');

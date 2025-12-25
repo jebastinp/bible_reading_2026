@@ -408,6 +408,30 @@ header {
     border-color: var(--accent-gold);
 }
 
+.btn-undo {
+    background: transparent;
+    color: var(--accent-red);
+    border: 2px solid var(--accent-red);
+    padding: 10px 18px;
+    border-radius: var(--radius-full);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-left: 8px;
+}
+
+.btn-undo:hover {
+    background: var(--accent-red);
+    color: white;
+}
+
+.button-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .btn-danger {
     background: var(--accent-red);
     color: white;

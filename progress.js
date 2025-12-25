@@ -14,10 +14,10 @@ async function showSelectNamePopup() {
     await initializeReadingPlan();
     const participants = await getParticipants();
     
-    // Create options HTML
+    // Create options HTML - participants is array of strings
     let optionsHTML = '<option value="">Choose your name...</option>';
-    participants.forEach(p => {
-        optionsHTML += `<option value="${p.name}">${p.name}</option>`;
+    participants.forEach(name => {
+        optionsHTML += `<option value="${name}">${name}</option>`;
     });
     
     // Create overlay with inline styles

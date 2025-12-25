@@ -91,6 +91,12 @@ async function saveCompletion(userName, date, portion, day, isCatchup = false) {
     return entry;
 }
 
+async function removeCompletion(userName, date) {
+    initFirebase();
+    await firebaseDb.ref(`completions/${userName}/${date}`).remove();
+    return true;
+}
+
 function getCurrentUser() {
     return localStorage.getItem('bible_current_user');
 }
@@ -169,6 +175,7 @@ window.saveParticipant = saveParticipant;
 window.removeParticipant = removeParticipant;
 window.getCompletions = getCompletions;
 window.saveCompletion = saveCompletion;
+window.removeCompletion = removeCompletion;
 window.getCurrentUser = getCurrentUser;
 window.saveCurrentUser = saveCurrentUser;
 window.getReadingForDate = getReadingForDate;
