@@ -1423,3 +1423,16 @@ header {
 svg defs {
     display: none;
 }
+
+/* Site Footer */
+.site-footer {
+    text-align: center;
+    padding: 20px 16px 100px;
+    margin-top: 40px;
+}
+
+.site-footer p {
+    font-size: 13px;
+    color: var(--text-light);
+    font-weight: 500;
+}
