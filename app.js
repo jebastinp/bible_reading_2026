@@ -227,14 +227,14 @@ async function markComplete() {
     }
 }
 
-// Undo completion
-async function undoComplete() {
+// Undo completion - can undo any date
+async function undoComplete(dateToUndo = null) {
     if (!currentUser) {
         alert('Please select your name first');
         return;
     }
     
-    const todayString = getTodayString();
+    const dateString = dateToUndo || getTodayString();
     
     // Confirm undo
     if (!confirm('Are you sure you want to undo this completion?')) {
@@ -242,11 +242,14 @@ async function undoComplete() {
     }
     
     try {
-        await removeCompletion(currentUser, todayString);
+        await removeCompletion(currentUser, dateString);
         
         // Update UI
-        await updateCompleteButton(todayString);
-        await updateCompletionCount(todayString);
+        const todayString = getTodayString();
+        if (dateString === todayString) {
+            await updateCompleteButton(todayString);
+            await updateCompletionCount(todayString);
+        }
         await loadRecentReadings();
         await loadMissedReadings();
         
@@ -322,6 +325,8 @@ function createMiniCard(data, date, isCompleted, isMissed = false) {
     const card = document.createElement('div');
     card.className = 'mini-card';
     
+    const dateString = data.date;
+    
     card.innerHTML = `
         <div class="mini-card-image">
             <img src="images/photo-1509021436665-8f07dbf5bf1d.jpeg" alt="Bible Reading">
@@ -335,9 +340,10 @@ function createMiniCard(data, date, isCompleted, isMissed = false) {
             <p>${data.day || getDayName(date.getDay())}</p>
             <div class="mini-card-footer">
                 ${isCompleted ? 
-                    '<span class="completed-badge">✓ Completed</span>' : 
+                    `<span class="completed-badge">✓ Completed</span>
+                     <button class="btn-undo-small" onclick="undoComplete('${dateString}')">Undo</button>` : 
                     isMissed ? 
-                        `<button class="btn-primary" onclick="markMissedComplete('${data.date}', '${data.portion}', '${data.day}')">Complete</button>` :
+                        `<button class="btn-primary" onclick="markMissedComplete('${dateString}', '${data.portion}', '${data.day}')">Complete</button>` :
                         '<span class="pending-badge">Pending</span>'
                 }
             </div>
