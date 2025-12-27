@@ -84,6 +84,64 @@
 
             <div id="participantsList" class="admin-participants-list"></div>
 
+            <!-- Download Reports Section -->
+            <div class="section-header">
+                <h2>📥 Download Reports</h2>
+            </div>
+
+            <div class="card download-section">
+                <!-- Weekly Report Download -->
+                <div class="download-item">
+                    <div class="download-info">
+                        <h4>📅 Weekly Report</h4>
+                        <p>Download completion report for a specific week</p>
+                    </div>
+                    <div class="download-controls">
+                        <input type="week" id="downloadWeekSelector">
+                        <button class="btn-primary" onclick="downloadWeeklyReport()">Download</button>
+                    </div>
+                </div>
+
+                <!-- Date Range Report Download -->
+                <div class="download-item">
+                    <div class="download-info">
+                        <h4>📆 Date Range Report</h4>
+                        <p>Download report for custom date range</p>
+                    </div>
+                    <div class="download-controls">
+                        <input type="date" id="downloadFromDate" placeholder="From">
+                        <input type="date" id="downloadToDate" placeholder="To">
+                        <button class="btn-primary" onclick="downloadDateRangeReport()">Download</button>
+                    </div>
+                </div>
+
+                <!-- Monthly Report Download -->
+                <div class="download-item">
+                    <div class="download-info">
+                        <h4>📊 Monthly Report</h4>
+                        <p>Download completion report for a month</p>
+                    </div>
+                    <div class="download-controls">
+                        <input type="month" id="downloadMonthSelector">
+                        <button class="btn-primary" onclick="downloadMonthlyReport()">Download</button>
+                    </div>
+                </div>
+
+                <!-- Individual Report Download -->
+                <div class="download-item">
+                    <div class="download-info">
+                        <h4>👤 Individual Report</h4>
+                        <p>Download report for a specific participant</p>
+                    </div>
+                    <div class="download-controls">
+                        <select id="downloadUserSelector">
+                            <option value="">Select participant...</option>
+                        </select>
+                        <button class="btn-primary" onclick="downloadIndividualReport()">Download</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Weekly Report -->
             <div class="section-header">
                 <h2>Weekly Report</h2>

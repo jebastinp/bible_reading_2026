@@ -1269,6 +1269,62 @@ header {
     font-family: inherit;
 }
 
+/* Download Section Styles */
+.download-section {
+    padding: 0;
+}
+
+.download-item {
+    padding: 20px;
+    border-bottom: 1px solid #E8E4E0;
+}
+
+.download-item:last-child {
+    border-bottom: none;
+}
+
+.download-info h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.download-info p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+
+.download-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.download-controls input,
+.download-controls select {
+    padding: 10px 14px;
+    border: 2px solid #E8E4E0;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    background: var(--bg-white);
+    min-width: 140px;
+}
+
+.download-controls input:focus,
+.download-controls select:focus {
+    outline: none;
+    border-color: var(--accent-gold);
+}
+
+.download-controls .btn-primary {
+    padding: 10px 20px;
+    font-size: 13px;
+}
+
 #weeklyReportContent {
     padding: 20px;
 }

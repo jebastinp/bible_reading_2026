@@ -175,6 +175,7 @@ async function showAdminPanel() {
         await loadUserFilter();
         await loadProgressMonitor();
         await setDefaultWeek();
+        await initializeDownloadSection();
         
         console.log('✅ Admin panel loaded successfully');
     } catch (error) {
@@ -566,6 +567,382 @@ async function exportAllData() {
     } catch (error) {
         console.error('❌ Error exporting data:', error);
         alert('Failed to export data. Please try again.');
+    }
+}
+
+// Initialize download section
+async function initializeDownloadSection() {
+    // Set default week for download
+    const today = new Date();
+    const weekInput = document.getElementById('downloadWeekSelector');
+    if (weekInput) {
+        const year = today.getFullYear();
+        const week = getWeekNumber(today);
+        weekInput.value = `${year}-W${String(week).padStart(2, '0')}`;
+    }
+    
+    // Set default month for download
+    const monthInput = document.getElementById('downloadMonthSelector');
+    if (monthInput) {
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        monthInput.value = `${year}-${month}`;
+    }
+    
+    // Set default date range (current week)
+    const fromDate = document.getElementById('downloadFromDate');
+    const toDate = document.getElementById('downloadToDate');
+    if (fromDate && toDate) {
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Monday
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6); // Sunday
+        
+        fromDate.value = formatDate(startOfWeek);
+        toDate.value = formatDate(endOfWeek);
+    }
+    
+    // Load user dropdown for individual report
+    await loadDownloadUserSelector();
+}
+
+// Load user dropdown for individual report
+async function loadDownloadUserSelector() {
+    const participants = await getParticipants({ strict: true });
+    const select = document.getElementById('downloadUserSelector');
+    
+    if (!select) return;
+    
+    select.innerHTML = '<option value="">Select participant...</option>';
+    
+    participants.forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        select.appendChild(option);
+    });
+}
+
+// Download Weekly Report
+async function downloadWeeklyReport() {
+    const weekInput = document.getElementById('downloadWeekSelector');
+    const weekValue = weekInput.value;
+    
+    if (!weekValue) {
+        alert('Please select a week');
+        return;
+    }
+    
+    const [year, week] = weekValue.split('-W');
+    
+    // Get date range for the week
+    const firstDay = getDateOfISOWeek(parseInt(week), parseInt(year));
+    const lastDay = new Date(firstDay);
+    lastDay.setDate(lastDay.getDate() + 6);
+    
+    try {
+        const participants = await getParticipants({ strict: true });
+        const completions = await getCompletions();
+        
+        // Get readings for the week
+        const weekReadings = BIBLE_READING_PLAN.filter(reading => {
+            const readingDate = new Date(reading.date);
+            return readingDate >= firstDay && readingDate <= lastDay;
+        });
+        
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += `Bible Reading - Weekly Report\n`;
+        csvContent += `Week ${week}, ${year}\n`;
+        csvContent += `Date Range: ${formatDate(firstDay)} to ${formatDate(lastDay)}\n`;
+        csvContent += `Generated: ${new Date().toLocaleString()}\n\n`;
+        csvContent += "Participant,Completed,Missed,Completion Rate,Details\n";
+        
+        participants.forEach(name => {
+            const userWeekCompletions = completions.filter(c => {
+                const compDate = new Date(c.date);
+                return c.userName === name && compDate >= firstDay && compDate <= lastDay;
+            });
+            
+            const completed = userWeekCompletions.length;
+            const missed = weekReadings.length - completed;
+            const rate = weekReadings.length > 0 ? Math.round((completed / weekReadings.length) * 100) : 0;
+            
+            const completedDates = userWeekCompletions.map(c => c.date).join('; ');
+            
+            csvContent += `${name},${completed},${missed},${rate}%,"${completedDates}"\n`;
+        });
+        
+        // Add summary
+        csvContent += `\n\nWeekly Summary\n`;
+        csvContent += `Total Participants,${participants.length}\n`;
+        csvContent += `Total Readings This Week,${weekReadings.length}\n`;
+        
+        const totalCompleted = completions.filter(c => {
+            const compDate = new Date(c.date);
+            return compDate >= firstDay && compDate <= lastDay;
+        }).length;
+        csvContent += `Total Completions,${totalCompleted}\n`;
+        
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `bible_reading_week${week}_${year}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showSuccessMessage(`Week ${week} report downloaded!`);
+    } catch (error) {
+        console.error('❌ Error downloading weekly report:', error);
+        alert('Failed to download report. Please try again.');
+    }
+}
+
+// Download Date Range Report
+async function downloadDateRangeReport() {
+    const fromDate = document.getElementById('downloadFromDate').value;
+    const toDate = document.getElementById('downloadToDate').value;
+    
+    if (!fromDate || !toDate) {
+        alert('Please select both from and to dates');
+        return;
+    }
+    
+    const startDate = new Date(fromDate);
+    const endDate = new Date(toDate);
+    
+    if (startDate > endDate) {
+        alert('From date must be before To date');
+        return;
+    }
+    
+    try {
+        const participants = await getParticipants({ strict: true });
+        const completions = await getCompletions();
+        
+        // Get readings for the date range
+        const rangeReadings = BIBLE_READING_PLAN.filter(reading => {
+            const readingDate = new Date(reading.date);
+            return readingDate >= startDate && readingDate <= endDate;
+        });
+        
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += `Bible Reading - Date Range Report\n`;
+        csvContent += `From: ${fromDate} To: ${toDate}\n`;
+        csvContent += `Generated: ${new Date().toLocaleString()}\n\n`;
+        csvContent += "Participant,Date,Portion,Day,Status,Completed On,Type\n";
+        
+        participants.forEach(name => {
+            const userCompletions = completions.filter(c => c.userName === name);
+            
+            rangeReadings.forEach(reading => {
+                const completion = userCompletions.find(c => c.date === reading.date);
+                
+                if (completion) {
+                    const type = completion.catchup ? 'Catch-up' : 'Regular';
+                    csvContent += `${name},${reading.date},"${reading.portion}",Day ${reading.day},Completed,${new Date(completion.completedOn).toLocaleString()},${type}\n`;
+                } else {
+                    csvContent += `${name},${reading.date},"${reading.portion}",Day ${reading.day},Pending,-,-\n`;
+                }
+            });
+        });
+        
+        // Add summary
+        csvContent += `\n\nSummary\n`;
+        csvContent += `Total Participants,${participants.length}\n`;
+        csvContent += `Total Readings in Range,${rangeReadings.length}\n`;
+        
+        const totalCompleted = completions.filter(c => {
+            const compDate = new Date(c.date);
+            return compDate >= startDate && compDate <= endDate;
+        }).length;
+        csvContent += `Total Completions,${totalCompleted}\n`;
+        
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `bible_reading_${fromDate}_to_${toDate}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showSuccessMessage('Date range report downloaded!');
+    } catch (error) {
+        console.error('❌ Error downloading date range report:', error);
+        alert('Failed to download report. Please try again.');
+    }
+}
+
+// Download Monthly Report
+async function downloadMonthlyReport() {
+    const monthInput = document.getElementById('downloadMonthSelector');
+    const monthValue = monthInput.value;
+    
+    if (!monthValue) {
+        alert('Please select a month');
+        return;
+    }
+    
+    const [year, month] = monthValue.split('-');
+    
+    // Get first and last day of month
+    const firstDay = new Date(parseInt(year), parseInt(month) - 1, 1);
+    const lastDay = new Date(parseInt(year), parseInt(month), 0);
+    
+    const monthName = firstDay.toLocaleString('en-US', { month: 'long' });
+    
+    try {
+        const participants = await getParticipants({ strict: true });
+        const completions = await getCompletions();
+        
+        // Get readings for the month
+        const monthReadings = BIBLE_READING_PLAN.filter(reading => {
+            const readingDate = new Date(reading.date);
+            return readingDate >= firstDay && readingDate <= lastDay;
+        });
+        
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += `Bible Reading - Monthly Report\n`;
+        csvContent += `${monthName} ${year}\n`;
+        csvContent += `Generated: ${new Date().toLocaleString()}\n\n`;
+        csvContent += "Participant,Total Completed,Total Missed,Completion Rate,Regular Completions,Catch-up Completions,Points Earned\n";
+        
+        participants.forEach(name => {
+            const userCompletions = completions.filter(c => c.userName === name);
+            const userMonthCompletions = userCompletions.filter(c => {
+                const compDate = new Date(c.date);
+                return compDate >= firstDay && compDate <= lastDay;
+            });
+            
+            const completed = userMonthCompletions.length;
+            const missed = monthReadings.length - completed;
+            const rate = monthReadings.length > 0 ? Math.round((completed / monthReadings.length) * 100) : 0;
+            
+            const regularCompletions = userMonthCompletions.filter(c => !c.catchup).length;
+            const catchupCompletions = userMonthCompletions.filter(c => c.catchup).length;
+            
+            // Calculate points
+            const regularPoints = regularCompletions * 10;
+            const catchupPoints = catchupCompletions * 5;
+            const totalPoints = regularPoints + catchupPoints;
+            
+            csvContent += `${name},${completed},${missed},${rate}%,${regularCompletions},${catchupCompletions},${totalPoints}\n`;
+        });
+        
+        // Add summary
+        csvContent += `\n\nMonthly Summary\n`;
+        csvContent += `Total Participants,${participants.length}\n`;
+        csvContent += `Total Readings This Month,${monthReadings.length}\n`;
+        
+        const totalCompleted = completions.filter(c => {
+            const compDate = new Date(c.date);
+            return compDate >= firstDay && compDate <= lastDay;
+        }).length;
+        csvContent += `Total Completions,${totalCompleted}\n`;
+        
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `bible_reading_${monthName.toLowerCase()}_${year}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showSuccessMessage(`${monthName} ${year} report downloaded!`);
+    } catch (error) {
+        console.error('❌ Error downloading monthly report:', error);
+        alert('Failed to download report. Please try again.');
+    }
+}
+
+// Download Individual Report
+async function downloadIndividualReport() {
+    const userSelect = document.getElementById('downloadUserSelector');
+    const selectedUser = userSelect.value;
+    
+    if (!selectedUser) {
+        alert('Please select a participant');
+        return;
+    }
+    
+    try {
+        const completions = await getCompletions();
+        const todayString = getTodayString();
+        
+        const userCompletions = completions.filter(c => c.userName === selectedUser);
+        
+        // Get all readings up to today
+        const allReadings = getReadingsUpToDate(todayString);
+        
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += `Bible Reading - Individual Report\n`;
+        csvContent += `Participant: ${selectedUser}\n`;
+        csvContent += `Generated: ${new Date().toLocaleString()}\n\n`;
+        
+        // Calculate stats
+        const totalReadings = allReadings.length;
+        const totalCompleted = userCompletions.length;
+        const regularCompletions = userCompletions.filter(c => !c.catchup).length;
+        const catchupCompletions = userCompletions.filter(c => c.catchup).length;
+        
+        // Points calculation
+        const regularPoints = regularCompletions * 10;
+        const catchupPoints = catchupCompletions * 5;
+        
+        // Calculate streak
+        let currentStreak = 0;
+        const sortedDates = allReadings.map(r => r.date).sort().reverse();
+        for (const date of sortedDates) {
+            if (userCompletions.find(c => c.date === date)) {
+                currentStreak++;
+            } else {
+                break;
+            }
+        }
+        const streakBonus = currentStreak * 2;
+        const totalPoints = regularPoints + catchupPoints + streakBonus;
+        
+        csvContent += `Summary Statistics\n`;
+        csvContent += `Total Readings Available,${totalReadings}\n`;
+        csvContent += `Total Completed,${totalCompleted}\n`;
+        csvContent += `Completion Rate,${totalReadings > 0 ? Math.round((totalCompleted / totalReadings) * 100) : 0}%\n`;
+        csvContent += `Regular Completions,${regularCompletions}\n`;
+        csvContent += `Catch-up Completions,${catchupCompletions}\n`;
+        csvContent += `Current Streak,${currentStreak} days\n\n`;
+        
+        csvContent += `Points Breakdown\n`;
+        csvContent += `Regular Points (${regularCompletions} x 10),${regularPoints}\n`;
+        csvContent += `Catch-up Points (${catchupCompletions} x 5),${catchupPoints}\n`;
+        csvContent += `Streak Bonus (${currentStreak} x 2),${streakBonus}\n`;
+        csvContent += `Total Points,${totalPoints}\n\n`;
+        
+        csvContent += `Detailed Reading Log\n`;
+        csvContent += "Date,Day,Portion,Status,Completed On,Type,Points\n";
+        
+        allReadings.forEach(reading => {
+            const completion = userCompletions.find(c => c.date === reading.date);
+            
+            if (completion) {
+                const type = completion.catchup ? 'Catch-up' : 'Regular';
+                const points = completion.catchup ? 5 : 10;
+                csvContent += `${reading.date},Day ${reading.day},"${reading.portion}",Completed,${new Date(completion.completedOn).toLocaleString()},${type},${points}\n`;
+            } else {
+                csvContent += `${reading.date},Day ${reading.day},"${reading.portion}",Pending,-,-,0\n`;
+            }
+        });
+        
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `bible_reading_${selectedUser.replace(/\s+/g, '_')}_report.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showSuccessMessage(`${selectedUser}'s report downloaded!`);
+    } catch (error) {
+        console.error('❌ Error downloading individual report:', error);
+        alert('Failed to download report. Please try again.');
     }
 }
 
