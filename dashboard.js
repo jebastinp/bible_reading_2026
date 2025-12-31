@@ -13,7 +13,8 @@
  * Ranking Priority:
  * 1. Total Points (highest first)
  * 2. If tied: Current Streak (highest first)
- * 3. If still tied: Completion Count (highest first)
+ * 3. If tied: Completion Count (highest first)
+ * 4. If tied: Earliest completion time (who finished first)
  */
 
 const POINTS = {
@@ -46,6 +47,11 @@ async function calculateUserStats(userName) {
     // Calculate points
     const pointsBreakdown = calculatePoints(userCompletions, streak);
     
+    // Get the earliest (first) completion time - for tiebreaker
+    const firstCompletionTime = userCompletions.length > 0 
+        ? Math.min(...userCompletions.map(c => new Date(c.completedOn).getTime()))
+        : Infinity;
+    
     return {
         userName: userName,
         completed: completedCount,
@@ -57,6 +63,7 @@ async function calculateUserStats(userName) {
         streakBonus: pointsBreakdown.streakBonus,
         regularCount: pointsBreakdown.regularCount,
         catchupCount: pointsBreakdown.catchupCount,
+        firstCompletionTime: firstCompletionTime,
         recentCompletions: userCompletions
             .sort((a, b) => new Date(b.date) - new Date(a.date))
             .slice(0, 5)
@@ -147,7 +154,7 @@ async function loadTopReaders() {
         participants.map(name => calculateUserStats(name))
     );
     
-    // Sort by points (highest first)
+    // Sort by points (highest first), then by earliest completion time
     const topReaders = allStats
         .sort((a, b) => {
             // First sort by total points (descending)
@@ -158,8 +165,12 @@ async function loadTopReaders() {
             if (b.streak !== a.streak) {
                 return b.streak - a.streak;
             }
-            // If still tied, sort by completion count
-            return b.completed - a.completed;
+            // If tied, sort by completion count (descending)
+            if (b.completed !== a.completed) {
+                return b.completed - a.completed;
+            }
+            // If still tied, who completed first wins (ascending - earlier time is smaller)
+            return a.firstCompletionTime - b.firstCompletionTime;
         })
         .slice(0, 5);
     
@@ -219,8 +230,23 @@ async function loadAllParticipants() {
         participants.map(name => calculateUserStats(name))
     );
     
-    // Sort by points (descending)
-    allStats.sort((a, b) => b.totalPoints - a.totalPoints);
+    // Sort by points (descending), with tiebreakers
+    allStats.sort((a, b) => {
+        // First sort by total points (descending)
+        if (b.totalPoints !== a.totalPoints) {
+            return b.totalPoints - a.totalPoints;
+        }
+        // If tied, sort by streak (descending)
+        if (b.streak !== a.streak) {
+            return b.streak - a.streak;
+        }
+        // If tied, sort by completion count (descending)
+        if (b.completed !== a.completed) {
+            return b.completed - a.completed;
+        }
+        // If still tied, who completed first wins (ascending)
+        return a.firstCompletionTime - b.firstCompletionTime;
+    });
     
     const container = document.getElementById('allParticipantsList');
     container.innerHTML = '';
