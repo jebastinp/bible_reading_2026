@@ -425,6 +425,9 @@ async function addAdmin() {
 
 const ADMIN_PASSWORD = 'bible2026';
 
+// Create alias for BIBLE_READING_PLAN
+const BIBLE_READING_PLAN = BIBLE_READING_PLAN_2026;
+
 // Expose globals
 window.getParticipants = getParticipants;
 window.saveParticipant = saveParticipant;
