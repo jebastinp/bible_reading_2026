@@ -273,6 +273,9 @@ let BIBLE_READING_PLAN_2026 = [
     { date: '2026-12-30', day: 'Wednesday', portion: 'Revelation 22' }
 ];
 
+// Create alias for BIBLE_READING_PLAN
+const BIBLE_READING_PLAN = BIBLE_READING_PLAN_2026;
+
 let firebaseApp;
 let firebaseDb;
 
@@ -424,9 +427,6 @@ async function addAdmin() {
 }
 
 const ADMIN_PASSWORD = 'bible2026';
-
-// Create alias for BIBLE_READING_PLAN
-const BIBLE_READING_PLAN = BIBLE_READING_PLAN_2026;
 
 // Expose globals
 window.getParticipants = getParticipants;
