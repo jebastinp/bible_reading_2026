@@ -296,7 +296,11 @@ async function loadParticipantsList() {
                 <h4>${name}</h4>
                 <p>${userCompletions.length} readings • ${percentage}% complete</p>
             </div>
-            <button class="btn-danger" onclick="removeParticipantConfirm('${name}')">Remove</button>
+            <div class="admin-participant-actions">
+                <button class="btn-secondary btn-small" onclick="renameParticipant('${name}')" title="Rename">✏️</button>
+                <button class="btn-secondary btn-small" onclick="clearParticipantData('${name}')" title="Clear Progress">🗑️</button>
+                <button class="btn-danger btn-small" onclick="removeParticipantConfirm('${name}')" title="Remove">✖</button>
+            </div>
         `;
         
         container.appendChild(card);
@@ -305,7 +309,7 @@ async function loadParticipantsList() {
 
 // Remove participant
 async function removeParticipantConfirm(name) {
-    if (!confirm(`Are you sure you want to remove ${name}? This will mark them as inactive.`)) {
+    if (!confirm(`Are you sure you want to remove ${name}? This will remove them from the participants list.`)) {
         return;
     }
     
@@ -316,11 +320,85 @@ async function removeParticipantConfirm(name) {
         await loadAdminStats();
         await loadUserFilter();
         await loadProgressMonitor();
+        await loadDownloadUserSelector();
         
         showSuccessMessage(`${name} removed successfully`);
     } catch (error) {
         console.error('Error removing participant:', error);
         alert('Failed to remove participant. Please try again.');
+    }
+}
+
+// Rename participant
+async function renameParticipant(oldName) {
+    const newName = prompt(`Enter new name for "${oldName}":`, oldName);
+    
+    if (!newName || newName.trim() === '' || newName.trim() === oldName) {
+        return;
+    }
+    
+    const trimmedName = newName.trim();
+    
+    try {
+        const participants = await getParticipants({ strict: true });
+        
+        if (participants.includes(trimmedName)) {
+            alert('A participant with this name already exists!');
+            return;
+        }
+        
+        // Get all completions for old name
+        const completions = await getCompletions();
+        const userCompletions = completions.filter(c => c.userName === oldName);
+        
+        // Add new participant
+        await saveParticipant(trimmedName);
+        
+        // Transfer all completions to new name
+        for (const completion of userCompletions) {
+            await saveCompletion(trimmedName, completion.date, completion.portion, completion.day, completion.catchup);
+            await removeCompletion(oldName, completion.date);
+        }
+        
+        // Remove old participant
+        await removeParticipant(oldName);
+        
+        await loadParticipantsList();
+        await loadAdminStats();
+        await loadUserFilter();
+        await loadProgressMonitor();
+        await loadDownloadUserSelector();
+        
+        showSuccessMessage(`Renamed "${oldName}" to "${trimmedName}" successfully!`);
+    } catch (error) {
+        console.error('Error renaming participant:', error);
+        alert('Failed to rename participant. Please try again.');
+    }
+}
+
+// Clear participant's progress data
+async function clearParticipantData(name) {
+    if (!confirm(`Are you sure you want to clear all progress data for ${name}?\n\nThis will delete all their completions and points. This action cannot be undone!`)) {
+        return;
+    }
+    
+    try {
+        const completions = await getCompletions();
+        const userCompletions = completions.filter(c => c.userName === name);
+        
+        // Remove all completions for this user
+        for (const completion of userCompletions) {
+            await removeCompletion(name, completion.date);
+        }
+        
+        await loadParticipantsList();
+        await loadAdminStats();
+        await loadProgressMonitor();
+        
+        showSuccessMessage(`Cleared all progress data for ${name}`);
+    } catch (error) {
+        console.error('Error clearing participant data:', error);
+        alert('Failed to clear participant data. Please try again.');
     }
 }
 

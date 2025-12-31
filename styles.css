@@ -1249,6 +1249,36 @@ header {
     color: var(--text-secondary);
 }
 
+.admin-participant-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-small {
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: var(--radius-sm);
+    min-width: auto;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #E8E4E0 0%, #D4CFC9 100%);
+    color: var(--text-primary);
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background: linear-gradient(135deg, #D4CFC9 0%, #C5C0BA 100%);
+    transform: translateY(-1px);
+}
+
+.btn-danger.btn-small {
+    padding: 8px 12px;
+}
+
 .week-filter {
     padding: 20px;
     display: flex;
