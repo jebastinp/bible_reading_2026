@@ -298,7 +298,6 @@ async function loadParticipantsList() {
             </div>
             <div class="admin-participant-actions">
                 <button class="btn-secondary btn-small" onclick="renameParticipant('${name}')" title="Rename">✏️</button>
-                <button class="btn-secondary btn-small" onclick="clearParticipantData('${name}')" title="Clear Progress">🗑️</button>
                 <button class="btn-danger btn-small" onclick="removeParticipantConfirm('${name}')" title="Remove">✖</button>
             </div>
         `;
