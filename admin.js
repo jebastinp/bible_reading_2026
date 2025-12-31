@@ -946,6 +946,38 @@ async function downloadIndividualReport() {
     }
 }
 
+// Reset all data for New Year
+async function resetForNewYear() {
+    const confirmFirst = confirm('⚠️ WARNING: This will delete ALL completion data!\n\nAre you sure you want to reset everything for the new year?');
+    
+    if (!confirmFirst) return;
+    
+    const confirmSecond = confirm('🚨 FINAL CONFIRMATION\n\nThis action CANNOT be undone!\n\nType OK to confirm you want to clear all completions, points, and progress data.');
+    
+    if (!confirmSecond) return;
+    
+    try {
+        console.log('🗑️ Starting New Year reset...');
+        
+        // Clear all completions from Firebase
+        await clearAllCompletions();
+        
+        console.log('✅ All completions cleared from Firebase');
+        
+        // Reload admin stats
+        await loadAdminStats();
+        await loadProgressMonitor();
+        await loadWeeklyReport();
+        
+        showSuccessMessage('🎆 New Year Reset Complete! All data cleared. Ready for 2026!');
+        
+        console.log('✅ New Year reset completed successfully');
+    } catch (error) {
+        console.error('❌ Error during New Year reset:', error);
+        alert('Failed to reset data. Please try again.\n\nError: ' + error.message);
+    }
+}
+
 // Show success message
 function showSuccessMessage(message) {
     const msgDiv = document.createElement('div');
