@@ -69,11 +69,11 @@ BIBLE_READING/
 
 ## 🔐 Admin Access
 
-**Default Password**: `bible2025`
+**Default Password**: ``
 
 To change the admin password:
 1. Open `data.js`
-2. Find the line: `const ADMIN_PASSWORD = 'bible2025';`
+2. Find the line: `const ADMIN_PASSWORD = 'your password';
 3. Change the password value
 4. Save the file
 
